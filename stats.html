@@ -39,7 +39,7 @@
   const tags = [...new Set(['total', 'laoura', 'direct', ...extra])];
   const rows = await Promise.all(tags.map(async t => {
     try {
-      const r = await fetch(`https://api.counterapi.dev/v1/${NS}/${t}`);
+      const r = await fetch(`https://api.counterapi.dev/v1/${NS}/${t}/`);
       const j = await r.json();
       return [t, j && typeof j.count === 'number' ? j.count : 0];
     } catch (e) { return [t, 0]; }

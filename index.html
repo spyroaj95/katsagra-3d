@@ -168,8 +168,11 @@
     var tag = (new URLSearchParams(location.search).get('v') || 'direct')
       .replace(/[^a-z0-9_-]/gi, '').slice(0, 24) || 'direct';
     if (TRACK.counterNamespace) {
-      fetch('https://api.counterapi.dev/v1/' + TRACK.counterNamespace + '/total/up').catch(function () {});
-      fetch('https://api.counterapi.dev/v1/' + TRACK.counterNamespace + '/' + tag + '/up').catch(function () {});
+      var base = 'https://api.counterapi.dev/v1/' + TRACK.counterNamespace + '/';
+      // sequential, not parallel: concurrent first hits race on namespace creation
+      fetch(base + 'total/up').catch(function () {}).then(function () {
+        return fetch(base + tag + '/up');
+      }).catch(function () {});
     }
     if (TRACK.goatcounter) {
       window.goatcounter = { path: location.pathname + '?v=' + tag };
