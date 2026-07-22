@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Katsagra 3D — view stats</title>
+<style>
+  :root { --ink: #22303a; --soft: #5a6b76; --aegean: #205e8c; --bg: #f7f4ee; --line: rgba(34,48,58,0.14); }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #e8ecef; --soft: #9fb0bb; --aegean: #6fb3dd; --bg: #10181f; --line: rgba(232,236,239,0.15); }
+  }
+  body { margin: 0; background: var(--bg); color: var(--ink); display: grid; place-items: center; min-height: 100vh;
+         font-family: "Avenir Next", "Seravek", system-ui, sans-serif; }
+  main { width: min(420px, 92vw); padding: 28px 30px 26px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--aegean); font-weight: 600; margin: 0 0 4px; }
+  h1 { font-size: 20px; margin: 0 0 18px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  td { padding: 9px 0; border-top: 1px solid var(--line); font-size: 14.5px; }
+  td:last-child { text-align: right; font-weight: 600; font-size: 16px; }
+  .note { margin-top: 18px; font-size: 12px; color: var(--soft); line-height: 1.55; }
+  code { background: var(--line); padding: 1px 5px; border-radius: 3px; font-size: 11.5px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Katsagra &middot; Naxos</p>
+  <h1>Who has opened the model</h1>
+  <table id="t"><tr><td>Loading…</td><td></td></tr></table>
+  <p class="note">Counts update the moment someone opens the page. Share the model as
+  <code>…/?v=name</code> and each name gets its own row here (add the same names to this page's URL as
+  <code>stats.html?tags=name1,name2</code>). Counters are anonymous — no cookies, no personal data.</p>
+</main>
+<script>
+(async () => {
+  const NS = 'spyroaj95-katsagra';
+  const extra = (new URLSearchParams(location.search).get('tags') || '')
+    .split(',').map(s => s.trim().replace(/[^a-z0-9_-]/gi, '')).filter(Boolean);
+  const tags = [...new Set(['total', 'laoura', 'direct', ...extra])];
+  const rows = await Promise.all(tags.map(async t => {
+    try {
+      const r = await fetch(`https://api.counterapi.dev/v1/${NS}/${t}`);
+      const j = await r.json();
+      return [t, j && typeof j.count === 'number' ? j.count : 0];
+    } catch (e) { return [t, 0]; }
+  }));
+  const label = t => t === 'total' ? 'All views' : t === 'direct' ? 'Untagged link' : `Link “${t}”`;
+  document.getElementById('t').innerHTML = rows
+    .map(([t, n]) => `<tr><td>${label(t)}</td><td>${n}</td></tr>`).join('');
+})();
+</script>
+</body>
+</html>
